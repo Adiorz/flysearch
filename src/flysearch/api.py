@@ -1,6 +1,5 @@
 from datetime import date
-from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import requests
 
@@ -8,8 +7,10 @@ from .trip import Trip
 from .options import Sort
 
 
-class RainbowAPI:
-    API_BASE_URL = "https://biletyczarterowe.r.pl/api/wyszukiwanie/wyszukajDataLayerV4"
+class Rainbow:
+    BASE_SERVICES_API_URL = (
+        "https://biletyczarterowe.r.pl/api/wyszukiwanie/wyszukajDataLayerV4"
+    )
 
     def __init__(self):
         self.headers = {
@@ -27,13 +28,13 @@ class RainbowAPI:
     def get_cheapest_trips(
         self,
         birth_dates: List[date],
-        departure_iata: Optional[List[str]],
+        departure_iatas: Optional[List[str]],
         arrival_iatas: Optional[List[str]],
         one_way: bool = False,
         departure_date_min: Optional[date] = None,
         departure_date_max: Optional[date] = None,
         sort: Sort = Sort.PRICE,
-    ) -> List[Dict[str, str]]:
+    ) -> List[Trip]:
         """
         Searches for flights based on the given criteria.
 
@@ -44,7 +45,7 @@ class RainbowAPI:
         :param departure_date_min: The minimum departure date for flights. If None, no minimum constraint is applied.
         :param departure_date_max: The maximum departure date for flights. If None, no maximum constraint is applied.
         :param sort: The sorting option for flight search results.
-        :return: A list of dictionaries, each representing a flight offer.
+        :return: A list of Trip objects.
         """
 
         # Validate the provided dates
@@ -71,12 +72,14 @@ class RainbowAPI:
             "dataPrzylotuMax": "",
             "sortowanie": sort.value,
         }
-        if departure_iata is not None:
-            params["iataSkad[]"] = departure_iata
+        if departure_iatas is not None:
+            params["iataSkad[]"] = departure_iatas
         if arrival_iatas is not None:
             params["iataDokad[]"] = arrival_iatas
 
-        response = requests.get(self.API_BASE_URL, params=params, headers=self.headers)
+        response = requests.get(
+            self.BASE_SERVICES_API_URL, params=params, headers=self.headers
+        )
         response.raise_for_status()  # Raises a HTTPError if the response was an error
 
         data = response.json()

@@ -3,7 +3,7 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 from flysearch.trip import Trip
-from flysearch.api import RainbowAPI
+from flysearch.api import Rainbow
 from flysearch.options import Sort
 
 
@@ -39,10 +39,10 @@ class TestFlySearchAPI(unittest.TestCase):
         mock_response.raise_for_status = MagicMock()
         mock_get.return_value = mock_response
 
-        api = RainbowAPI()
+        api = Rainbow()
         results = api.get_cheapest_trips(
             birth_dates=[date(year=1989, month=10, day=30)],
-            departure_iata=["BZG"],
+            departure_iatas=["BZG"],
             arrival_iatas=["AYT"],
             one_way=True,
             departure_date_min=date(2024, 5, 1),
@@ -53,7 +53,8 @@ class TestFlySearchAPI(unittest.TestCase):
         self.assertIsInstance(results, list)
         self.assertEqual(len(results), 1)
         self.assertIsInstance(results[0], Trip)
-        self.assertEqual(results[0].key, "AYT")
+        self.assertEqual(results[0].departure_iata, "BZG")
+        self.assertEqual(results[0].arrival_iata, "AYT")
 
         # Ensure the mock was called with the expected parameters
         mock_get.assert_called_once()
